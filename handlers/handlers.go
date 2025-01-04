@@ -2,13 +2,16 @@ package handlers
 
 import (
 	store "cuturl/store"
-	"fmt"
+	"encoding/json"
 	"math/rand"
 	"net/http"
+	"os"
 	"path"
 )
 
 var urlStore = store.NewURLStore()
+
+var baseURL = os.Getenv("BASE_URL")
 
 func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
@@ -25,7 +28,21 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 
 	shortURL := urlStore.AddURL(generatedShortURL, longURL)
 
-	fmt.Fprintf(w, "Shortened URL: http://localhost:7400/%s", shortURL)
+	// fmt.Fprintf(w, "Shortened URL: http://localhost:7400/%s", shortURL)
+
+	if baseURL == "" {
+		baseURL = "http://localhost:7400"
+	}
+
+	response := map[string]string{
+		"shortened_url": baseURL + shortURL,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+	}
 }
 
 func RedirectHandler(w http.ResponseWriter, r *http.Request) {

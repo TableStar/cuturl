@@ -3,7 +3,10 @@ package main
 import (
 	handlers "cuturl/handlers"
 	"fmt"
+	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 )
 
 func enableCORS(next http.Handler) http.Handler {
@@ -24,6 +27,10 @@ func enableCORS(next http.Handler) http.Handler {
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
 	http.HandleFunc("/shorten", handlers.ShortenHandler)
 	http.HandleFunc("/redir/", handlers.RedirectHandler)
