@@ -1,6 +1,8 @@
 package store
 
-import "sync"
+import (
+	"sync"
+)
 
 type URLStore struct {
 	URLs map[string]string
@@ -13,10 +15,18 @@ func NewURLStore() *URLStore {
 	}
 }
 
-func (u *URLStore) AddURL(shortURL, longURL string) {
+func (u *URLStore) AddURL(shortURL, longURL string) string {
 	u.mu.Lock()
 	defer u.mu.Unlock()
+
+	for existingShortURL, existingLongURL := range u.URLs {
+		if existingLongURL == longURL {
+			return existingShortURL
+		}
+	}
+
 	u.URLs[shortURL] = longURL
+	return shortURL
 }
 
 func (u *URLStore) GetURL(shortURL string) (string, bool) {
@@ -25,4 +35,16 @@ func (u *URLStore) GetURL(shortURL string) (string, bool) {
 	longURL, exists := u.URLs[shortURL]
 
 	return longURL, exists
+}
+
+func (u *URLStore) GetAllURLs() map[string]string {
+	u.mu.RLock()
+	defer u.mu.RUnlock()
+
+	// Create a copy to avoid external modification
+	urlsCopy := make(map[string]string)
+	for shortURL, longURL := range u.URLs {
+		urlsCopy[shortURL] = longURL
+	}
+	return urlsCopy
 }

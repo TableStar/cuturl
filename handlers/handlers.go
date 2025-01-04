@@ -21,9 +21,9 @@ func ShortenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortURL := generateShortURL()
+	generatedShortURL := generateShortURL()
 
-	urlStore.AddURL(shortURL, longURL)
+	shortURL := urlStore.AddURL(generatedShortURL, longURL)
 
 	fmt.Fprintf(w, "Shortened URL: http://localhost:7400/%s", shortURL)
 }
